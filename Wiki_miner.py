@@ -2,11 +2,6 @@ import wikipedia
 import string
 import pickle
 
-# class Page(object):
-#     def __init__(self, page, pagename):
-#         self.page = wikipedia.page(pagename)
-#         self.pagename = pagename or ""
-
 
 # babson = wikipedia.page("Babson College")
 # print(babson.title)
@@ -19,82 +14,52 @@ def process_page(pagename):
     returns: map from each word to the number of times it appears.
     """
     hist = {}
-    fp = wikipedia.page(pagename)
+    page_content = wikipedia.page(pagename).content
+    print(type(page_content))
+    print(page_content)
 
-    for line in fp:
-        line = line.replace('-', ' ')
-        strippables = string.punctuation + string.whitespace
+    page_content = page_content.replace('-', ' ')
+    strippables = string.punctuation + string.whitespace
 
-        for word in line.split():
-            # remove punctuation and convert to lowercase
-            word = word.strip(strippables)
-            word = word.lower()
+    for word in page_content.split():
+        # remove punctuation and convert to lowercase
+        word = word.strip(strippables)
+        word = word.lower()
 
-            # update the histogram
-            hist[word] = hist.get(word, 0) + 1
+        # update the histogram
+        hist[word] = hist.get(word, 0) + 1
 
+    
     return hist
 
-
-def process_file(filename):
-    """Makes a histogram that contains the words from a file.
-    filename: string
-    returns: map from each word to the number of times it appears.
-    """
-    hist = {}
-    fp = open(filename, encoding='utf8')
-
-    for line in fp:
-        if line.startswith('*** END OF THIS PROJECT'):
-            break
-        line = line.replace('-', ' ')
-        strippables = string.punctuation + string.whitespace
-
-        for word in line.split():
-            # remove punctuation and convert to lowercase
-            word = word.strip(strippables)
-            word = word.lower()
-
-            # update the histogram
-            hist[word] = hist.get(word, 0) + 1
-
-    return hist
-
-def total_words(hist):
-    """Returns the total of the frequencies in a histogram."""
-    return sum(hist.values())
+# print(process_page('Babson College'))
+# print(process_page('Boston University'))
 
 
-def different_words(hist):
-    """Returns the number of different words in a histogram."""
-    return len(hist)
-
-
-def most_common(hist, excluding_stopwords=True):
+def most_common(hist ,excluding_stopwords=True):
     """Makes a list of word-freq pairs(tuples) in descending order of frequency.
     hist: map from word to frequency
     excluding_stopwords: a boolean value. If it is True, do not include any stopwords in the list.
     returns: list of (frequency, word) pairs
     """
+    hist = process_page("Bentley University")
     t = []
+    f = open("stopwords.txt","r")
+    stopwords = f.readlines()
+    stopwords = list(stopwords)
 
-    stopwords = process_file('stopwords.txt', False)
-
-    stopwords = list(stopwords.keys())
-    # print(stopwords)
 
     for word, freq in hist.items():
         if excluding_stopwords:
-            if word in stopwords:
+            if word  in stopwords:
                 continue
-
-        t.append((freq, word))
-
+        t.append((freq,word))
     t.sort(reverse=True)
     return t
 
+# print(most_common('Babson College'))
 
-def print_most_common(hist, num=10):
+def print_most_common(hist, num=40):
     """Prints the most commons words in a histgram and their frequencies.
     hist: histogram (map from word to frequency)
     num: number of words to print
@@ -104,6 +69,7 @@ def print_most_common(hist, num=10):
     for freq, word in t[:num]:
         print(word, '\t', freq)
 
+print (print_most_common('Bentley University'))
 
 
 
@@ -123,20 +89,3 @@ def print_most_common(hist, num=10):
 # print (bentley.url)
 # print (bentley.content)
 
-
-def main():
-    hist = process_page('Babson College')
-    print('Total number of words:', total_words(hist))
-    print('Number of different words:', different_words(hist))
-
-    t = most_common(hist, False)
-
-    print('The most common words are:')
-    for freq, word in t[0:20]:
-        print(word, '\t', freq)
-    print_most_common(hist)
-
-
-
-if __name__ == '__main__':
-    main()
